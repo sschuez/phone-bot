@@ -2,7 +2,7 @@ require(Modules.ASR);
 // OpenAI API URL
 const openaiURL = 'https://api.openai.com/v1/chat/completions';
 // Your OpenAI API KEY
-const openaiApiKey = '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';
+const openaiApiKey = 'sk...';
 // Array that will contain all chat messages
 var messages = [{
         "role": "system",
