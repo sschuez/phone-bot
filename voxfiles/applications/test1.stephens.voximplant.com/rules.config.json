@@ -1,0 +1,9 @@
+[
+  {
+     "ruleName":"inboundgpt",
+     "scenarios":[
+        "inboundgpt"
+     ],
+     "rulePattern":".*"
+  }
+]
