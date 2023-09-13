@@ -5,6 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "@voximplant/apiclient-nodejs": "^2.1.0",
-    "@voximplant/voxengine-ci": "^2.2.0"
+    "@voximplant/voxengine-ci": "^2.2.0",
+    "dotenv": "^16.3.1"
   }
 }
