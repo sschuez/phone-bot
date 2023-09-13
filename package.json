@@ -6,6 +6,14 @@
   "dependencies": {
     "@voximplant/apiclient-nodejs": "^2.1.0",
     "@voximplant/voxengine-ci": "^2.2.0",
-    "dotenv": "^16.3.1"
-  }
+    "axios": "^1.5.0",
+    "dotenv": "^16.3.1",
+    "form-data": "^4.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "description": ""
 }
