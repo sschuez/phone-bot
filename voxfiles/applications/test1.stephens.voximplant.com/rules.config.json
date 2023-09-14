@@ -1,10 +1,11 @@
 [
-  {
-     "ruleName":"inboundgpt",
-     "scenarios":[
-        "inboundgpt1",
-        "inboundgpt2"
-     ],
-     "rulePattern":".*"
+  {"ruleName":
+    "inboundgpt",
+    
+    "scenarios":[
+      "inboundgpt1",
+      "inboundgptwhisper1"
+      ],
+      "rulePattern":".*"
   }
 ]

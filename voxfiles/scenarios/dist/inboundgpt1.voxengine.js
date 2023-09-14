@@ -2,8 +2,7 @@ require(Modules.ASR);
 // OpenAI API URL
 const openaiURL = 'https://api.openai.com/v1/chat/completions';
 // Your OpenAI API KEY
-// const openaiApiKey = VoxEngine.secureStorage.openaiApiKey;
-const openaiApiKey = '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';
+const openaiApiKey = VoxEngine.secureStorage.openaiApiKey;
 // Array that will contain all chat messages
 var messages = [{
         "role": "system",
@@ -41,14 +40,17 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
     asr.addEventListener(ASREvents.Result, async (e) => {
         // Messages array is used for the conversation context according to the OpenAI API
         messages.push({ "role": "user", "content": e.text });
-        Logger.write("Sending data to the OpenAI endpoint");
+        Logger.write("🔥🔥🔥 " + "User message: " + e.text);
+        Logger.write("🔥🔥🔥 Sending data to the OpenAI endpoint");
         // Add some "telemetry" to understand how long it took OpenAI to process the request
         let ts1 = Date.now();
         var res = await requestCompletion();
         let ts2 = Date.now();
-        Logger.write("Request complete in " + (ts2 - ts1) + " ms");
+        Logger.write("🔥🔥🔥 Request complete in " + (ts2 - ts1) + " ms");
         if (res.code == 200) {
             let jsData = JSON.parse(res.text);
+            Logger.write("🔥🔥🔥" + "OpenAI response: " + jsData.choices[0].message.content);
+            // Create audio record with opanei response to send to call
             player = VoxEngine.createTTSPlayer(jsData.choices[0].message.content, {
                 language: defaultVoice,
                 progressivePlayback: true
@@ -59,7 +61,7 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
             messages.push({ role: "assistant", content: jsData.choices[0].message.content });
         }
         else {
-            Logger.write(res.code + " : " + res.text);
+            Logger.write("🔥🔥🔥" + res.code + " : " + res.text);
             player = VoxEngine.createTTSPlayer('Sorry, something went wrong, can you repeat please?', {
                 language: defaultVoice,
                 progressivePlayback: true
@@ -74,6 +76,7 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
     });
     // Say some prompt after the call is connected 
     call.addEventListener(CallEvents.Connected, (e) => {
+        // Create audio record of greeting to send to call
         player = VoxEngine.createTTSPlayer("Bonjour, this is the most exquisite French restaurant in town that you probably don't deserve to dine at. How may I, with great reluctance, assist you today?", {
             language: defaultVoice
         });
@@ -87,6 +90,7 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
     });
     // Terminate the session after hangup
     call.addEventListener(CallEvents.Disconnected, (e) => {
+        Logger.write("🔥🔥🔥" + "Whole conversation: " + messages);
         VoxEngine.terminate();
     });
     // Answer the call
