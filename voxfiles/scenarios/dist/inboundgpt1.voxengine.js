@@ -2,7 +2,8 @@ require(Modules.ASR);
 // OpenAI API URL
 const openaiURL = 'https://api.openai.com/v1/chat/completions';
 // Your OpenAI API KEY
-const openaiApiKey = VoxEngine.secureStorage.openaiApiKey;
+// const openaiApiKey = VoxEngine.secureStorage.openaiApiKey;
+const openaiApiKey = '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';
 // Array that will contain all chat messages
 var messages = [{
         "role": "system",
