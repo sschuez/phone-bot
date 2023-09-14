@@ -2,7 +2,7 @@ require(Modules.ASR);
 // OpenAI API URL
 const openaiURL = 'https://api.openai.com/v1/chat/completions';
 // Your OpenAI API KEY
-const openaiApiKey = VoxEngine.secureStorage.openaiApiKey;
+// const openaiApiKey = VoxEngine.secureStorage.openaiApiKey;
 // Array that will contain all chat messages
 var messages = [{
         "role": "system",
@@ -49,7 +49,7 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
         Logger.write("🔥🔥🔥 Request complete in " + (ts2 - ts1) + " ms");
         if (res.code == 200) {
             let jsData = JSON.parse(res.text);
-            Logger.write("🔥🔥🔥" + "OpenAI response: " + jsData.choices[0].message.content);
+            Logger.write("🔥🔥🔥 " + "OpenAI response: " + jsData.choices[0].message.content);
             // Create audio record with opanei response to send to call
             player = VoxEngine.createTTSPlayer(jsData.choices[0].message.content, {
                 language: defaultVoice,
@@ -61,7 +61,7 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
             messages.push({ role: "assistant", content: jsData.choices[0].message.content });
         }
         else {
-            Logger.write("🔥🔥🔥" + res.code + " : " + res.text);
+            Logger.write("🔥🔥🔥 " + res.code + " : " + res.text);
             player = VoxEngine.createTTSPlayer('Sorry, something went wrong, can you repeat please?', {
                 language: defaultVoice,
                 progressivePlayback: true
@@ -90,7 +90,21 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
     });
     // Terminate the session after hangup
     call.addEventListener(CallEvents.Disconnected, (e) => {
-        Logger.write("🔥🔥🔥" + "Whole conversation: " + messages)
+        const conversation = messages.map(({ role, content }) => {
+            let prefix;
+            switch (role) {
+              case 'system':
+                prefix = 'System instruction ♫';
+                break;
+              case 'user':
+                prefix = 'User message 🧒';
+                break;
+              default:
+                prefix = 'Assistant response 🤖';
+            }
+            return `${prefix}:\n    ${content}\n`;
+          }).join('\n');  
+        Logger.write(`🔥🔥🔥\nWhole conversation:\n${conversation}`);
         VoxEngine.terminate();
     });
     // Answer the call
