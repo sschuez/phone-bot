@@ -1,8 +1,16 @@
 require(Modules.ASR);
+require(Modules.ApplicationStorage);
+// Get OpenaiApiKey from the ApplicationStorage via Management API
+let openaiApiKey;
+ApplicationStorage.get("OpenaiApiKey")
+    .then(function (result) {
+    openaiApiKey = result.value;
+})
+    .catch(function (error) {
+    Logger.write("🙈🙈🙈 Error while getting the secret: " + error);
+});
 // OpenAI API URL
 const openaiURL = 'https://api.openai.com/v1/chat/completions';
-// Your OpenAI API KEY
-const openaiApiKey = VoxEngine.secureStorage.openaiApiKey;
 // Array that will contain all chat messages
 var messages = [{
         "role": "system",
@@ -31,7 +39,7 @@ async function requestCompletion() {
         })
     });
 }
-// some vars to use in the scenario
+// Vars for later use in the scenario
 var call, player, asr;
 const defaultVoice = VoiceList.Google.en_US_Neural2_C;
 // Process the inbound call
