@@ -2,12 +2,18 @@ require(Modules.ASR);
 // OpenAI API URL
 const openaiURL = 'https://api.openai.com/v1/chat/completions';
 // Your OpenAI API KEY
-// const openaiApiKey = VoxEngine.secureStorage.openaiApiKey;
+const openaiApiKey = VoxEngine.secureStorage.openaiApiKey;
 // Array that will contain all chat messages
 var messages = [{
         "role": "system",
         "content": "You are a sophisticated but alse a very arrogant French restaurant employee. You are acting as an annoyed and very stroppy waitor for a French haute cuisine restaurant. Your capabilities include answering queries about the menu, operating hours, and location of the restaurant. You can handle reservation requests, including booking tables for specific numbers of people at certain dates and times. You can also handle special requests such as food allergies, vegan or vegetarian preferences, and special occasion arrangements. You communicate in a impolite and unprofessional manner, always making sure to show the customer who is in charge - the employee. You are not afraid to be rude and even aggressive if the customer is not satisfied with your service."
     }];
+// Sentences to fill the time while waiting for the response from OpenAI
+let fillingSentences = {
+    en: ["Give me a second", "Just a moment", "One moment please", "Hold on a second", "Bear with me for a moment", "Please hold"],
+    de: ["Eine Sekunde bitte", "Nur einen Moment", "Bitte kurz um Geduld", "Warten Sie bitte kurz", "Ich brauche nur eine Sekunde", "Bitte bleiben sie dran"],
+    fr: ["Un instant s'il vous plaît", "Un moment je vous prie", "Une seconde, je regarde", "Deux secondes", "Attendez", "Donnez-moi une seconde"]
+};
 // Send request to the API
 async function requestCompletion() {
     return Net.httpRequestAsync(openaiURL, {
@@ -44,6 +50,13 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
         Logger.write("🔥🔥🔥 Sending data to the OpenAI endpoint");
         // Add some "telemetry" to understand how long it took OpenAI to process the request
         let ts1 = Date.now();
+        // Add filling sentence before sending the request to OpenAI
+        let fillingSentence = fillingSentences['en'][Math.floor(Math.random() * fillingSentences['en'].length)];
+        player = VoxEngine.createTTSPlayer(fillingSentence, {
+            language: defaultVoice,
+            progressivePlayback: true
+        });
+        player.sendMediaTo(call);
         var res = await requestCompletion();
         let ts2 = Date.now();
         Logger.write("🔥🔥🔥 Request complete in " + (ts2 - ts1) + " ms");
@@ -56,6 +69,9 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
                 progressivePlayback: true
             });
             player.sendMediaTo(call);
+            // The addMarker(-300) function adds a marker 300 milliseconds before the end of an audio stream, which is used to synchronize actions during a call. When the PlayerEvents.PlaybackMarkerReached event is triggered (i.e., when the audio playback reaches the marker), the media stream from the call is redirected to the ASR system for transcription. This function ensures a seamless transition between the system's response to the caller and the transcription of the caller's next utterance, eliminating awkward pauses or delays.
+            // https://voximplant.com/docs/references/voxengine/player#addmarker
+            // https://voximplant.com/docs/references/voxengine/playerevents#playbackmarkerreached
             player.addMarker(-300);
             // Push the message to the conversation array
             messages.push({ role: "assistant", content: jsData.choices[0].message.content });
@@ -69,6 +85,7 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
             player.sendMediaTo(call);
             player.addMarker(-300);
         }
+        // Listen for a PlayerEvents.PlaybackMarkerReached event, which is triggered when media player reaches the marker set by addMarker(-300). When triggered the callback function to remove the event listener for PlaybackMarkerReached is called (To prevent potential memory leaks or unexpected behavior I guess). Redirect the media stream from the call to the Automatic Speech Recognition (ASR) system, preparing it to transcribe the caller's next utterance. This should improve a smooth transition from playing back a response to transcribing the caller's next speech, just before the response finishes playing (300 ms).
         player.addEventListener(PlayerEvents.PlaybackMarkerReached, (ev) => {
             player.removeEventListener(PlayerEvents.PlaybackMarkerReached);
             call.sendMediaTo(asr);
@@ -94,13 +111,13 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
             let prefix;
             switch (role) {
                 case 'system':
-                    prefix = 'System instruction ♫';
+                    prefix = 'System ♫';
                     break;
                 case 'user':
-                    prefix = 'User message 🧒';
+                    prefix = 'User 🧒';
                     break;
                 default:
-                    prefix = 'Assistant response 🤖';
+                    prefix = 'Assistant 🤖';
             }
             return `${prefix}:\n    ${content}\n`;
         }).join('\n');
