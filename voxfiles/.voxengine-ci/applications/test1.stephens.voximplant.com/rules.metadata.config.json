@@ -1,1 +1,1 @@
-[{"ruleName":"inboundgpt","ruleId":179905,"scenarios":[{"scenarioName":"inboundgpt1","scenarioId":104338},{"scenarioName":"inboundgptwhisper1","scenarioId":104342}],"rulePattern":".*"}]
+[{"ruleName":"inboundgpt","ruleId":179905,"scenarios":[],"rulePattern":".*"}]
