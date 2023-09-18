@@ -2,7 +2,8 @@
   {
     "ruleName":"inboundgpt",
       "scenarios":[
-        
+        "inboundgpt1",
+        "inboundgptwhisper1"
       ],
       "rulePattern":".*"
   }
