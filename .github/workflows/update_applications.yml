@@ -20,4 +20,4 @@ jobs:
           VOX_CI_CREDENTIALS: 'vox_ci_credentials.json'
       - name: Run voxengine-ci scripts
         run: |
-          npx voxengine-ci upload --application-name test1
+          npx voxengine-ci upload --application-name test1 --force
