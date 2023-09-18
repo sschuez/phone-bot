@@ -101,7 +101,7 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
             call.sendMediaTo(asr);
         });
     });
-    // Say some prompt after the call is connected 
+    // Welcome prompt the user hears when call is connected 
     call.addEventListener(CallEvents.Connected, (e) => {
         // Create audio record of greeting to send to call
         player = VoxEngine.createTTSPlayer("Bonjour, this is the most exquisite French restaurant in town that you probably don't deserve to dine at. How may I, with great reluctance, assist you today?", {
@@ -115,7 +115,7 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
             call.sendMediaTo(asr);
         });
     });
-    // Terminate the session after hangup
+    // Terminate the session after hangup and log the whole conversation
     call.addEventListener(CallEvents.Disconnected, (e) => {
         const conversation = messages.map(({ role, content }) => {
             let prefix;
