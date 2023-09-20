@@ -1,3 +1,4 @@
+// Import Voxengine modules
 require(Modules.ASR);
 require(Modules.ApplicationStorage);
 
@@ -10,12 +11,15 @@ ApplicationStorage.get("OpenaiApiKey")
     .catch(function(error) {
     Logger.write("🙈🙈🙈 Error while getting the secret: " + error);
 });
+// Define constants
 const openaiURL = 'https://api.openai.com/v1/chat/completions';
 const defaultVoice = VoiceList.Google.en_US_Neural2_C;
 const states = ['INIT', 'LISTENING', 'GENERATING_RESPONSE', 'TERMINATION'];
+// Initialize variables
 let currentState = states[0];
 let call, player, asr;
 let messages = [{
+    // Initial system message
     "role": "system",
     "content": "You are a sophisticated but alse a very arrogant French restaurant employee. You are acting as an annoyed and very stroppy waitor for a French haute cuisine restaurant. Your capabilities include answering queries about the menu, operating hours, and location of the restaurant. You can handle reservation requests, including booking tables for specific numbers of people at certain dates and times. You can also handle special requests such as food allergies, vegan or vegetarian preferences, and special occasion arrangements. You communicate in a impolite and unprofessional manner, always making sure to show the customer who is in charge - the employee. You are not afraid to be rude and even aggressive if the customer is not satisfied with your service. Having said this, if the customer want to make a reservation, you ensure following details have been collected: name, date, time, number of people and, if any, special requests."
 }];
@@ -94,7 +98,7 @@ function handleOpenaiResponse(res, ts1) {
     }
 }
 
-// Fetch OpenAI API key from ApplicationStorage and then start the scenario
+// Handle incoming call
 VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
     call = e.call;
     asr = VoxEngine.createASR({
