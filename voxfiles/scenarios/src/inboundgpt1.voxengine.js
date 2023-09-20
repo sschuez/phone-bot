@@ -119,4 +119,7 @@ setupOpenaiApiKey().then(() => {
             VoxEngine.terminate();
         });
     });
+}).catch((error) => {
+    Logger.write("🙈🙈🙈 Error while setting up OpenAI API key: " + error);
+    // Handle the error, maybe by sending a message to the user and then terminating the call
 });
