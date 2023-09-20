@@ -1,11 +1,20 @@
 require(Modules.ASR);
 require(Modules.ApplicationStorage);
 
+// Get OpenaiApiKey from the ApplicationStorage via Management API
+let openaiApiKey;
+ApplicationStorage.get("OpenaiApiKey")
+    .then(function(result) {
+    openaiApiKey = result.value;
+})
+    .catch(function(error) {
+    Logger.write("🙈🙈🙈 Error while getting the secret: " + error);
+});
 const openaiURL = 'https://api.openai.com/v1/chat/completions';
 const defaultVoice = VoiceList.Google.en_US_Neural2_C;
 const states = ['INIT', 'LISTENING', 'GENERATING_RESPONSE', 'TERMINATION'];
 let currentState = states[0];
-let openaiApiKey, call, player, asr;
+let call, player, asr;
 let messages = [{
     "role": "system",
     "content": "You are a sophisticated but alse a very arrogant French restaurant employee. You are acting as an annoyed and very stroppy waitor for a French haute cuisine restaurant. Your capabilities include answering queries about the menu, operating hours, and location of the restaurant. You can handle reservation requests, including booking tables for specific numbers of people at certain dates and times. You can also handle special requests such as food allergies, vegan or vegetarian preferences, and special occasion arrangements. You communicate in a impolite and unprofessional manner, always making sure to show the customer who is in charge - the employee. You are not afraid to be rude and even aggressive if the customer is not satisfied with your service. Having said this, if the customer want to make a reservation, you ensure following details have been collected: name, date, time, number of people and, if any, special requests."
@@ -15,16 +24,6 @@ let fillingSentences = {
     de: ["Eine Sekunde bitte", "Nur einen Moment", "Bitte kurz um Geduld", "Warten Sie bitte kurz", "Ich brauche nur eine Sekunde", "Bitte bleiben sie dran"],
     fr: ["Un instant s'il vous plaît", "Un moment je vous prie", "Une seconde, je regarde", "Deux secondes", "Attendez", "Donnez-moi une seconde"]
 };
-
-// Fetch OpenAI API key from ApplicationStorage
-async function setupOpenaiApiKey() {
-    try {
-        const result = await ApplicationStorage.get("OpenaiApiKey");
-        openaiApiKey = result.value;
-    } catch (error) {
-        Logger.write("🙈🙈🙈 Error while getting the secret: " + error);
-    }
-}
 
 async function requestCompletion() {
     return Net.httpRequestAsync(openaiURL, {
@@ -96,30 +95,25 @@ function handleOpenaiResponse(res, ts1) {
 }
 
 // Fetch OpenAI API key from ApplicationStorage and then start the scenario
-setupOpenaiApiKey().then(() => {
-    VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
-        call = e.call;
-        asr = VoxEngine.createASR({
-            profile: ASRProfileList.Google.en_US,
-            singleUtterance: true
-        });
-        asr.addEventListener(ASREvents.Result, processASRResult);
-        call.answer();
-        call.addEventListener(CallEvents.Connected, (e) => {
-            currentState = states[1];
-            playTTS("Bonjour, this is the most exquisite French restaurant in town that you probably don't deserve to dine at. How may I, with great reluctance, assist you today?", (ev) => {
-                player.removeEventListener(PlayerEvents.PlaybackMarkerReached);
-                call.sendMediaTo(asr);
-            });
-        });
-        call.addEventListener(CallEvents.Disconnected, (e) => {
-            currentState = states[3];
-            const conversation = messages.map(({ role, content }) => `${role === 'system' ? 'System ♫' : role === 'user' ? 'User 🧒' : 'Assistant 🤖'}:\n    ${content}\n`).join('\n');
-            Logger.write(`🔥🔥🔥\nWhole conversation:\n${conversation}`);
-            VoxEngine.terminate();
+VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
+    call = e.call;
+    asr = VoxEngine.createASR({
+        profile: ASRProfileList.Google.en_US,
+        singleUtterance: true
+    });
+    asr.addEventListener(ASREvents.Result, processASRResult);
+    call.answer();
+    call.addEventListener(CallEvents.Connected, (e) => {
+        currentState = states[1];
+        playTTS("Bonjour, this is the most exquisite French restaurant in town that you probably don't deserve to dine at. How may I, with great reluctance, assist you today?", (ev) => {
+            player.removeEventListener(PlayerEvents.PlaybackMarkerReached);
+            call.sendMediaTo(asr);
         });
     });
-}).catch((error) => {
-    Logger.write("🙈🙈🙈 Error while setting up OpenAI API key: " + error);
-    // Handle the error, maybe by sending a message to the user and then terminating the call
+    call.addEventListener(CallEvents.Disconnected, (e) => {
+        currentState = states[3];
+        const conversation = messages.map(({ role, content }) => `${role === 'system' ? 'System ♫' : role === 'user' ? 'User 🧒' : 'Assistant 🤖'}:\n    ${content}\n`).join('\n');
+        Logger.write(`🔥🔥🔥\nWhole conversation:\n${conversation}`);
+        VoxEngine.terminate();
+    });
 });
