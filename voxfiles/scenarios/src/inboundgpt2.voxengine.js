@@ -2,17 +2,6 @@
 require(Modules.ASR);
 require(Modules.ApplicationStorage);
 
-// Get OpenaiApiKey from the ApplicationStorage via Management API
-let openaiApiKey;
-ApplicationStorage.get("OpenaiApiKey")
-    .then(function(result) {
-    openaiApiKey = result.value;
-    Logger.write("🔑🔑🔑 OpenaiApiKey successfully retrieved");
-})
-    .catch(function(error) {
-    Logger.write("🙈🙈🙈 Error while getting the secret: " + error);
-});
-
 class FiniteStateMachine {
   constructor() {
       this.states = ['Init', 'Listening', 'GeneratingResponse', 'Termination'];
@@ -144,12 +133,21 @@ class CallEvent {
 // Handle incoming call
 VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
   Logger.write("📞📞📞 Incoming call detected");
+  // Get OpenaiApiKey from the ApplicationStorage via Management API
+  let openaiApiKey;
+  ApplicationStorage.get("OpenaiApiKey")
+      .then(function(result) {
+      openaiApiKey = result.value;
+      Logger.write("🔑🔑🔑 OpenaiApiKey successfully retrieved");
+  })
+      .catch(function(error) {
+      Logger.write("🙈🙈🙈 Error while getting the secret: " + error);
+  });
   let call = e.call;
   let asr = VoxEngine.createASR({
       profile: ASRProfileList.Google.en_US,
       singleUtterance: true
   });
-
   let callEvent = new CallEvent(call, asr, openaiApiKey);
   asr.addEventListener(ASREvents.Result, callEvent.processASRResult.bind(callEvent));
 
