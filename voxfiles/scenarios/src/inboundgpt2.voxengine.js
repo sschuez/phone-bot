@@ -139,21 +139,16 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
       singleUtterance: true
   });
 
-  // let openaiApiKey;
-  // ApplicationStorage.get("OpenaiApiKey")
-      // .then(function(result) {
-          // openaiApiKey = result.value;
-          let callEvent = new CallEvent(call, asr, openaiApiKey);
-          asr.addEventListener(ASREvents.Result, callEvent.processASRResult.bind(callEvent));
-          call.answer();
-          call.addEventListener(CallEvents.Connected, (ev) => {
-              callEvent.playTTS(callEvent.greeting, (ev) => {
-                  asr.sendMediaTo(call);
-                  callEvent.fsm.goToListening();
-              });
-          });
-      // })
-      // .catch(function(error) {
-          // Logger.write("Error while getting the secret: " + error);
-      // });
+  let callEvent = new CallEvent(call, asr, openaiApiKey);
+  asr.addEventListener(ASREvents.Result, callEvent.processASRResult.bind(callEvent));
+
+  // Answer the call and start ASR when the call is connected
+  call.answer();
+  call.addEventListener(CallEvents.Connected, (ev) => {
+      callEvent.playTTS(callEvent.greeting, (ev) => {
+          // Send media from the call to the ASR service
+          call.sendMediaTo(asr);
+          callEvent.fsm.goToListening();
+      });
+  });
 });
