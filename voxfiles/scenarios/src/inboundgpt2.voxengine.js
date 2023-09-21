@@ -2,6 +2,24 @@
 require(Modules.ASR);
 require(Modules.ApplicationStorage);
 
+class OpenaiKey {
+  constructor() {
+    this.key = null;
+  }
+
+  get() {
+    return ApplicationStorage.get("OpenaiApiKey")
+      .then(result => {
+        this.key = result.value;
+        Logger.write("🔑🔑🔑 OpenaiApiKey successfully retrieved");
+        return this.key;
+      })
+      .catch(error => {
+        Logger.write("🙈🙈🙈 Error while getting the secret: " + error);
+      });
+  }
+}
+
 class FiniteStateMachine {
   constructor() {
       this.states = ['Init', 'Listening', 'GeneratingResponse', 'Termination'];
@@ -133,32 +151,28 @@ class CallEvent {
 // Handle incoming call
 VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
   Logger.write("📞📞📞 Incoming call detected");
+
   // Get OpenaiApiKey from the ApplicationStorage via Management API
-  let openaiApiKey;
-  ApplicationStorage.get("OpenaiApiKey")
-      .then(function(result) {
-      openaiApiKey = result.value;
-      Logger.write("🔑🔑🔑 OpenaiApiKey successfully retrieved");
-  })
-      .catch(function(error) {
-      Logger.write("🙈🙈🙈 Error while getting the secret: " + error);
-  });
-  let call = e.call;
-  let asr = VoxEngine.createASR({
+  let openaiKey = new OpenaiKey();
+  openaiKey.get().then(key => {
+    Logger.write("🔑🔑🔑 OpenaiApiKey: " + key);
+    let call = e.call;
+    let asr = VoxEngine.createASR({
       profile: ASRProfileList.Google.en_US,
       singleUtterance: true
-  });
-  let callEvent = new CallEvent(call, asr, openaiApiKey);
-  asr.addEventListener(ASREvents.Result, callEvent.processASRResult.bind(callEvent));
+    });
+    let callEvent = new CallEvent(call, asr, key);
+    asr.addEventListener(ASREvents.Result, callEvent.processASRResult.bind(callEvent));
 
-  // Answer the call and start ASR when the call is connected
-  call.answer();
-  call.addEventListener(CallEvents.Connected, (ev) => {
+    // Answer the call and start ASR when the call is connected
+    call.answer();
+    call.addEventListener(CallEvents.Connected, (ev) => {
       Logger.write("📞📞📞 Call connected");
       callEvent.playTTS(callEvent.greeting, (ev) => {
-          // Send media from the call to the ASR service
-          call.sendMediaTo(asr);
-          callEvent.fsm.goToListening();
+        // Send media from the call to the ASR service
+        call.sendMediaTo(asr);
+        callEvent.fsm.goToListening();
       });
+    });
   });
 });
