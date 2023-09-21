@@ -76,18 +76,17 @@ class CallEvent {
           await this.handleListeningState(e);
       }
   }
-
   async handleListeningState(e) {
-      if (this.fsm.goToGeneratingState()) {
-          this.messages.push({ "role": "user", "content": e.text });
-          let fillingSentence = this.fillingSentences['en'][Math.floor(Math.random() * this.fillingSentences['en'].length)];
-          this.playTTS(fillingSentence, (ev) => {
-              this.asr.sendMediaTo(this.call);
-              this.fsm.goToListening();
-          });
-          var res = await this.requestCompletion();
-          this.handleOpenaiResponse(res);
-      }
+    if (this.fsm.goToGeneratingState()) {
+      this.messages.push({ "role": "user", "content": e.text });
+      let fillingSentence = this.fillingSentences['en'][Math.floor(Math.random() * this.fillingSentences['en'].length)];
+      this.playTTS(fillingSentence, (ev) => {
+        this.call.sendMediaTo(this.asr); // Send media from the call to the ASR service
+        this.fsm.goToListening();
+      });
+      var res = await this.requestCompletion();
+      this.handleOpenaiResponse(res);
+    }
   }
   async requestCompletion() {
       return Net.httpRequestAsync(this.openaiURL, {
