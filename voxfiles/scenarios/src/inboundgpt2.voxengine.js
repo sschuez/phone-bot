@@ -90,7 +90,7 @@ class CallEvent {
       });
       Logger.write("🔄🔄🔄 Switching to GeneratingState");
       var res = await this.requestCompletion();
-      this.handleOpenaiResponse(res);
+      this.handleOpenaiResponse(res, Date.now());
     }
   }
   async requestCompletion() {
@@ -108,7 +108,9 @@ class CallEvent {
       });
   }
 
-  handleOpenaiResponse(res) {
+  handleOpenaiResponse(res, ts1) {
+      let ts2 = Date.now();
+      Logger.write("⏱️⏱️⏱️ Request complete in " + (ts2 - ts1) + " ms");
       if (res.code == 200) {
           Logger.write("👌👌👌 OpenAI response received: " + res.text);
           let jsData = JSON.parse(res.text);
