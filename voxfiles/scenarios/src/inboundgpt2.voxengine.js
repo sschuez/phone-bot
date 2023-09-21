@@ -7,7 +7,7 @@ let openaiApiKey;
 ApplicationStorage.get("OpenaiApiKey")
     .then(function(result) {
     openaiApiKey = result.value;
-    Logger.write("🔑🔑🔑 OpenaiApiKey retrieved: " + openaiApiKey);
+    Logger.write("🔑🔑🔑 OpenaiApiKey successfully retrieved");
 })
     .catch(function(error) {
     Logger.write("🙈🙈🙈 Error while getting the secret: " + error);
@@ -110,7 +110,7 @@ class CallEvent {
 
   handleOpenaiResponse(res) {
       if (res.code == 200) {
-          Logger.write("👌👌👌 OpenAI response received successfully");
+          Logger.write("👌👌👌 OpenAI response received: " + res.text);
           let jsData = JSON.parse(res.text);
           this.playTTS(jsData.choices[0].message.content, (ev) => {
               this.call.sendMediaTo(this.asr);
@@ -119,7 +119,7 @@ class CallEvent {
           this.messages.push({ role: "assistant", content: jsData.choices[0].message.content });
       }
       else {
-          Logger.write("🚫🚫🚫 Error receiving OpenAI response");
+          Logger.write(`🚫🚫🚫 Error (${res.code}) receiving OpenAI response: ${res.text}`);
           this.playTTS('Sorry, something went wrong, can you repeat please?', (ev) => {
               this.call.sendMediaTo(this.asr);
               this.fsm.goToListening();
