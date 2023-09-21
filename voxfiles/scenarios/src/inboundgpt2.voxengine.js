@@ -77,10 +77,11 @@ class CallEvent {
           de: ["Eine Sekunde bitte", "Nur einen Moment", "Bitte kurz um Geduld", "Warten Sie bitte kurz", "Ich brauche nur eine Sekunde", "Bitte bleiben sie dran"],
           fr: ["Un instant s'il vous plaît", "Un moment je vous prie", "Une seconde, je regarde", "Deux secondes", "Attendez", "Donnez-moi une seconde"]
       };
-      this.greeting = "Bonjour, this is the most exquisite French restaurant in town that you probably don't deserve to dine at. How may I, with great reluctance, assist you today?"
+      this.greeting = "Bonjour, this is the most exquisite French restaurant in town that you probably don't deserve to dine at. How may I, with great reluctance, assist you today?";
+      this.handleDisconnected = this.handleDisconnected.bind(this);
+      this.call.addEventListener(CallEvents.Disconnected, this.handleDisconnected); 
       Logger.write("🔧🔧🔧 CallEvent initialized");
   }
-
   async processASRResult(e) {
       if (this.fsm.getCurrentState() === 'Listening') {
           Logger.write("👂👂👂 Listening for ASR results");
@@ -114,7 +115,6 @@ class CallEvent {
           })
       });
   }
-
   handleOpenaiResponse(res, ts1) {
       let ts2 = Date.now();
       Logger.write("⏱️⏱️⏱️ Request complete in " + (ts2 - ts1) + " ms");
@@ -135,7 +135,6 @@ class CallEvent {
           });
       }
   }
-
   playTTS(content, callback) {
       Logger.write("🔊🔊🔊 Playing TTS: " + content);
       let player = VoxEngine.createTTSPlayer(content, {
@@ -146,6 +145,13 @@ class CallEvent {
       player.addMarker(-300);
       player.addEventListener(PlayerEvents.PlaybackMarkerReached, callback);
   }
+  handleDisconnected(e) {
+    const conversation = this.messages.map(({ role, content }) => 
+      `${role === 'system' ? 'System ♫' : role === 'user' ? 'User 🧒' : 'Assistant 🤖'}:\n    ${content}\n`
+    ).join('\n');
+    Logger.write(`🔥🔥🔥\nWhole conversation:\n${conversation}`);
+    VoxEngine.terminate();
+  }
 }
 
 // Handle incoming call
@@ -155,7 +161,6 @@ VoxEngine.addEventListener(AppEvents.CallAlerting, (e) => {
   // Get OpenaiApiKey from the ApplicationStorage via Management API
   let openaiKey = new OpenaiKey();
   openaiKey.get().then(key => {
-    Logger.write("🔑🔑🔑 OpenaiApiKey: " + key);
     let call = e.call;
     let asr = VoxEngine.createASR({
       profile: ASRProfileList.Google.en_US,
