@@ -3,6 +3,7 @@
     "ruleName":"inboundgpt",
       "scenarios":[
         "inboundgpt1",
+        "inboundgpt2",
         "inboundgptwhisper1"
       ],
       "rulePattern":".*"
